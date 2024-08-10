@@ -1,0 +1,18 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "boilerplate websocket server",
+  "main": "index.js",
+  "scripts": {
+    "dev": "tsc-watch --noClear -p ./tsconfig.json --onSuccess \"node ./dist/index.js\""
+  },
+  "author": "Kai Arnold",
+  "license": "ISC",
+  "dependencies": {
+    "@types/node": "^22.2.0",
+    "typescript": "^5.5.4"
+  },
+  "devDependencies": {
+    "tsc-watch": "^6.2.0"
+  }
+}
