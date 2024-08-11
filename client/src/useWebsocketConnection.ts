@@ -1,18 +1,22 @@
-let _instance: WebsocketConnection;
+import EventEmitter from 'eventemitter3';
+import useEventBus from './useEventBus';
+
 export default function useWebsocketConnection() {
+    const events = useEventBus();
     if (!_instance) {
         // singleton
-        _instance = new WebsocketConnection('ws://localhost:8080');
+        _instance = new WebsocketConnection('ws://localhost:8080', events);
     }
     return _instance;
 }
+let _instance: WebsocketConnection;
 
 type State = 'connecting' | 'open' | 'closed';
 class WebsocketConnection {
     private state: State = 'closed';
     private readonly socket: WebSocket;
 
-    constructor(url: string) {
+    constructor(url: string, events: EventEmitter) {
         this.state = 'connecting';
 
         this.socket = new WebSocket(url);
@@ -21,7 +25,7 @@ class WebsocketConnection {
             console.log(`WebSocketConnection.onopen`);
 
             this.state = 'open';
-            //getEventBus().emit('websocket.open');
+            events.emit('websocket.open');
         };
         // we don't need to do anything here - rely on onclose always being called, as per the standard:
         // https://html.spec.whatwg.org/multipage/web-sockets.html#feedback-from-the-protocol%3Aconcept-websocket-closed            
@@ -30,9 +34,8 @@ class WebsocketConnection {
             console.log(`WebSocketConnection.onclose clean:${event.wasClean}, code:${event.code}, reason:${event.reason}`);
             this.state = 'closed';
 
-            //let normalizedCode = event.code;
-            //getEventBus().emit('websocket.closed');
+            events.emit('websocket.closed');
         }
-        //this.socket.onmessage = event => getEventBus().emit('websocket.ondata', event.data);
+        this.socket.onmessage = event => events.emit('websocket.ondata', event.data);
     }
 }
