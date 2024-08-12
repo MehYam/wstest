@@ -6,7 +6,9 @@ export function useWorld() {
     const [boxedWorld, setBoxedWorld] = React.useState({ world: cw.world });
 
     const worldChangeWatcher = React.useCallback((e: WorldEvent) => {
-        if (e.type === 'peerJoin' || e.type === 'peerLeave') {
+        if (e.type === 'welcome' || 'peerJoin' || e.type === 'peerLeave') {
+            console.log('re-box world');
+
             // re-box the world to indicate that it's changed.  This assumes
             // that ConnectedWorld has already mutated the world.
             setBoxedWorld({ world: cw.world });
@@ -26,9 +28,11 @@ export function useWorld() {
 export function usePeer(peerId: number) {
     const cw = getConnectedWorld();
     
-    const [boxedPeer, setBoxedPeer] = React.useState<{ peer: Peer }>();
+    const [boxedPeer, setBoxedPeer] = React.useState<{ peer: Peer | undefined }>({ peer: undefined });
     const peerChangeWatcher = React.useCallback((e: WorldEvent) => {
         if (e.type === 'peerChange') {
+            console.log('re-box peer');
+
             const peerChange = e as PeerChangeEvent;
             if (peerChange.peerId === peerId) {
                 // re-box the world to indicate that it's changed.  This assumes
@@ -67,6 +71,7 @@ class ConnectedWorld {
         const wc = getWebsocketConnection();
         this.websocketEvents = wc.events;
         this.websocketEvents.addListener('worldEvent', (e: WorldEvent) => {
+            console.log(`worldEvent ${JSON.stringify(e)}`);
             switch (e.type) {
                 case 'welcome': {
                     const hello = e as WelcomeEvent;

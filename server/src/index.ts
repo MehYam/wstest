@@ -2,8 +2,7 @@ import { WebSocketServer, WebSocket } from 'ws';
 
 const wss = new WebSocketServer({ port: 8080 });
 wss.on('connection', ws => {
-    const newPeer = { id: ++connections, state: '', ws };
-    console.log(`on ws connection ${newPeer.id}`);
+    const newPeer = { id: ++connections, state: 'empty', ws };
 
     // broadcast the addition of this new client
     const peerJoin = JSON.stringify({ type: 'peerJoin', peerId: newPeer.id });
@@ -11,16 +10,16 @@ wss.on('connection', ws => {
         peer.ws.send(peerJoin);
     }
 
-    // send the new client the state of the world
+    // officially add the client, send it the world
     // TODO: might be a race condition between the last send and this one?
+    world.set(connections, newPeer);
+    console.log(`on ws connection ${newPeer.id}, ${world.size} peers`);
+
     const peers = Array
         .from(world.values())
         .map(({ ws, ...rest }) => (rest));
 
     ws.send(JSON.stringify({ type: 'welcome', peers }));
-
-    // officially add the client
-    world.set(connections, newPeer);
 
     ws.on('message', data => {
         // update world
@@ -34,10 +33,10 @@ wss.on('connection', ws => {
         }
     });
     ws.on('close', (code, reason) => {
-        console.log(`ws connection close ${code}/${reason}`);
-
         // update world
         world.delete(newPeer.id);
+
+        console.log(`ws connection close ${code}/${reason}, ${world.size} peers`);
 
         // broadcast change
         const peerLeave = JSON.stringify({ type: 'peerLeave', peerId: newPeer.id });
