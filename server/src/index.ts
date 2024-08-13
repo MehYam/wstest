@@ -22,9 +22,9 @@ wss.on('connection', ws => {
 
     const peers = Array
         .from(world.values())
-        .map(({ ws, ...rest }) => (rest));
+        .map(({ ws, ...rest }) => rest);
 
-    ws.send(JSON.stringify({ type: 'welcome', peers, peerId: newPeer.id }));
+    ws.send(JSON.stringify({ type: 'welcome', peers, id: newPeer.id }));
 
     ws.on('message', data => {
         // update world
@@ -35,7 +35,7 @@ wss.on('connection', ws => {
         world.get(newPeer.id)!.state = state;
 
         // broadcast change
-        const peerChange = JSON.stringify({ type: 'peerChange', peerId: newPeer.id, state });
+        const peerChange = JSON.stringify({ type: 'peerChange', id: newPeer.id, state });
         for (const peer of world.values()) {
             peer.ws.send(peerChange);
         }
@@ -47,7 +47,7 @@ wss.on('connection', ws => {
         console.log(`ws connection close ${code}/${reason}, peers: ${world.size}`);
 
         // broadcast change
-        const peerLeave = JSON.stringify({ type: 'peerLeave', peerId: newPeer.id });
+        const peerLeave = JSON.stringify({ type: 'peerLeave', id: newPeer.id });
         for (const peer of world.values()) {
             peer.ws.send(peerLeave);
         }
@@ -66,8 +66,7 @@ let connections = 0;
 
 const colors = [
     'red',
-    'green',
-    'blue',
+    'lightblue',
     'yellow',
     'purple',
     'grey',
@@ -77,5 +76,6 @@ const colors = [
     'darkgreen',
     'darkmagenta',
     'crimson',
-    'cornflowerblue'
+    'cornflowerblue',
+    'gold',
 ] as const;

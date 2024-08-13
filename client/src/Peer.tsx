@@ -29,7 +29,7 @@ function PeerBody({ peer }: PBProps) {
             if (e.code === 'Enter') {
                 console.log('would apply');
                 e.preventDefault();
-                e.currentTarget.blur();
+                e.currentTarget.select();
 
                 getWebsocketConnection().setState(e.currentTarget.value);
             }
@@ -37,8 +37,8 @@ function PeerBody({ peer }: PBProps) {
         onChange={e => setStateFieldValue(e.currentTarget.value)}
     /> : <em>{peer.state}</em>;
 
-    return <>
+    return <span>
         <div>Peer: {peer.id} {peer.self ? <strong>(SELF)</strong> : ''}</div>
         <div>State: {stateField}</div>
-    </>;
+    </span>;
 }

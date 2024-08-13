@@ -33,8 +33,8 @@ export function usePeer(peerId: number) {
     const peerChangeWatcher = React.useCallback((e: WorldEvent) => {
         if (e.type === 'welcome' || e.type === 'peerChange') {
             const peerChange = e as PeerChangeEvent;
-            if (peerChange.peerId === peerId) {
-                const old = cw.world.get(peerChange.peerId)!;
+            if (peerChange.id === peerId) {
+                const old = cw.world.get(peerChange.id)!;
                 const peer = { ...old, state: peerChange.state };
 
                 // re-box the world to indicate that it's changed.  This assumes
@@ -58,7 +58,7 @@ export type Peer = { id: number, state: string, color: string, self: boolean };
 
 type WorldEventType = 'welcome' | 'peerJoin' | 'peerLeave' | 'peerChange';
 type WorldEvent = { type: WorldEventType };
-type PeerEvent = WorldEvent & { peerId: number };
+type PeerEvent = WorldEvent & { id: number };
 
 type WelcomeEvent = PeerEvent & { type: 'welcome', peers: Peer[] };
 type PeerJoinEvent = PeerEvent & { type: 'peerJoin', state: string, color: string };
@@ -78,23 +78,24 @@ class ConnectedWorld {
                 case 'welcome': {
                     const hello = e as WelcomeEvent;
                     for (const peer of hello.peers) {
-                        this.world.set(peer.id, { ...peer, self: hello.peerId === peer.id});
+                        this.world.set(peer.id, { ...peer, self: hello.id === peer.id});
                     }
                     break;
                 }
                 case 'peerJoin': {
                     const join = e as PeerJoinEvent;
-                    this.world.set(join.peerId, { id: join.peerId, state: join.state, color: join.color, self: false });
+                    const { id, state, color } = join;
+                    this.world.set(id, { id, state, color, self: false });
                     break;
                 }
                 case 'peerLeave': {
                     const leave = e as PeerLeaveEvent;
-                    this.world.delete(leave.peerId);
+                    this.world.delete(leave.id);
                     break;
                 }
                 case 'peerChange': {
                     const change = e as PeerChangeEvent;
-                    this.world.get(change.peerId)!.state = change.state;
+                    this.world.get(change.id)!.state = change.state;
                     break;
                 }
             }
