@@ -39,4 +39,8 @@ class WebsocketConnection {
         // https://html.spec.whatwg.org/multipage/web-sockets.html#feedback-from-the-protocol%3Aconcept-websocket-closed            
         this.socket.onerror = event => console.warn('WebSocketConnection.onerror', this.state, event);
     }
+
+    setState(newState: string) {
+        this.socket.send(newState);
+    }
 }

@@ -2,10 +2,15 @@ import { WebSocketServer, WebSocket } from 'ws';
 
 const wss = new WebSocketServer({ port: 8080 });
 wss.on('connection', ws => {
-    const newPeer = { id: ++connections, state: 'empty', ws };
+    const newPeerBase = {
+        id: ++connections, 
+        state: '---',
+        color: colors[colors.length % connections]
+    };
+    const newPeer = { ws, ...newPeerBase };
 
     // broadcast the addition of this new client
-    const peerJoin = JSON.stringify({ type: 'peerJoin', peerId: newPeer.id });
+    const peerJoin = JSON.stringify({ type: 'peerJoin', ...newPeerBase });
     for (const peer of world.values()) {
         peer.ws.send(peerJoin);
     }
@@ -13,7 +18,7 @@ wss.on('connection', ws => {
     // officially add the client, send it the world
     // TODO: might be a race condition between the last send and this one?
     world.set(connections, newPeer);
-    console.log(`on ws connection ${newPeer.id}, peers: ${world.size}`);
+    console.log(`ws connection ${newPeer.id}, peers: ${world.size}`);
 
     const peers = Array
         .from(world.values())
@@ -24,6 +29,9 @@ wss.on('connection', ws => {
     ws.on('message', data => {
         // update world
         const state = data.toString();
+
+        console.log(`peer ${newPeer.id} setting state to ${state}`);
+
         world.get(newPeer.id)!.state = state;
 
         // broadcast change
@@ -50,8 +58,24 @@ wss.on('connection', ws => {
 type Peer = {
     id: number,
     state: string,
+    color: string,
     ws: WebSocket
 };
 const world = new Map<number, Peer>();
 let connections = 0;
 
+const colors = [
+    'red',
+    'green',
+    'blue',
+    'yellow',
+    'purple',
+    'grey',
+    'khaki',
+    'cyan',
+    'magenta',
+    'darkgreen',
+    'darkmagenta',
+    'crimson',
+    'cornflowerblue'
+] as const;
