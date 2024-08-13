@@ -13,13 +13,13 @@ wss.on('connection', ws => {
     // officially add the client, send it the world
     // TODO: might be a race condition between the last send and this one?
     world.set(connections, newPeer);
-    console.log(`on ws connection ${newPeer.id}, ${world.size} peers`);
+    console.log(`on ws connection ${newPeer.id}, peers: ${world.size}`);
 
     const peers = Array
         .from(world.values())
         .map(({ ws, ...rest }) => (rest));
 
-    ws.send(JSON.stringify({ type: 'welcome', peers }));
+    ws.send(JSON.stringify({ type: 'welcome', peers, peerId: newPeer.id }));
 
     ws.on('message', data => {
         // update world
@@ -36,7 +36,7 @@ wss.on('connection', ws => {
         // update world
         world.delete(newPeer.id);
 
-        console.log(`ws connection close ${code}/${reason}, ${world.size} peers`);
+        console.log(`ws connection close ${code}/${reason}, peers: ${world.size}`);
 
         // broadcast change
         const peerLeave = JSON.stringify({ type: 'peerLeave', peerId: newPeer.id });
